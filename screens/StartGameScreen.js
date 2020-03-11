@@ -12,8 +12,10 @@ import {
 import Card from '../components/Card'
 import Input from '../components/Input'
 import NumberContainer from '../components/NumberContainer'
+import MainButton from '../components/MainButton'
 
 import COLOR from '../constants/Colors'
+import STYLES from '../constants/default-styles'
 
 const StartGameScreen = props => {
 
@@ -47,18 +49,18 @@ const StartGameScreen = props => {
     if(confirmed){
             confirmMessage =                 
             <Card style={styles.startGameContainer}>
-                <Text>Selected number:</Text>
+                <Text style={STYLES.bodyText}>Selected number:</Text>
                 <NumberContainer>{selectedNumber}</NumberContainer>
-                <Button color={COLOR.primary} title="Start game" onPress={() => props.onStartGameHandler(selectedNumber)} />
+                <MainButton onPress={() => props.onStartGameHandler(selectedNumber)} >Start Game</MainButton>
             </Card>
         }
 
     return(
         <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
             <View style={styles.screen}>
-                <Text style={styles.title}>Start a New Game!</Text>
+                <Text style={[styles.title, STYLES.bodyText]}>Start a New Game!</Text>
                 <Card style={styles.inputArea}>
-                    <Text>Select a number</Text>
+                    <Text style={STYLES.bodyText}>Select a number</Text>
                     <Input 
                         blurOnSubmit 
                         keyboardType="number-pad" 

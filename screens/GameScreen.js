@@ -1,10 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react'
-import {View, Text, StyleSheet, Button, Alert} from 'react-native'
+import {View, Text, StyleSheet, Button, Alert , ScrollView, FlatList } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
 
 import Card from '../components/Card'
 import NumberContainer from '../components/NumberContainer'
+import MainButton from '../components/MainButton'
 
 import COLOR from '../constants/Colors'
+import STYLES from '../constants/default-styles'
 
 const generateRandomBetween = (min, max, exclude) => {
     min = Math.ceil(min);
@@ -18,10 +21,18 @@ const generateRandomBetween = (min, max, exclude) => {
     }
 }
 
-const GameScreen = props => {
+const renderItemList = (item, round) => (
+    <View style={styles.listItem}>
+        <Text styles={STYLES.bodyText}>Round # {item - round.index}</Text>
+        <Text style={STYLES.bodyText}>Guess: {round.item}</Text>
+    </View>
+)
 
-    const [currentGuess, setCurrentGuess] = useState(generateRandomBetween(1, 99, props.userChoice));
-    const [rounds, setCountRounds] = useState(0);
+const GameScreen = props => {
+    const initialGuess = generateRandomBetween(1, 99, props.userChoice);
+
+    const [currentGuess, setCurrentGuess] = useState(initialGuess);
+    const [rounds, setRounds] = useState([initialGuess]);
     const currentMin = useRef(1);
     const currentMax = useRef(99);
 
@@ -29,7 +40,7 @@ const GameScreen = props => {
 
     useEffect(() =>{
         if(currentGuess === userChoice){
-            onGameOver(rounds);
+            onGameOver(rounds.length);
         }
     },[userChoice, currentGuess, onGameOver]);
 
@@ -42,23 +53,34 @@ const GameScreen = props => {
             return;
         }
         if(direction === 'lower'){
-            currentMax.current = currentGuess;
+            currentMax.current = currentGuess -1;
         }
         else if (direction === 'greater'){
-            currentMin.current = currentGuess;
+            currentMin.current = currentGuess + 1;
         }
-        setCurrentGuess(generateRandomBetween(currentMin.current, currentMax.current, currentGuess));
-        setCountRounds(rounds => rounds + 1)
+        const nextGuess = generateRandomBetween(currentMin.current, currentMax.current, currentGuess)
+        setCurrentGuess(nextGuess);
+        setRounds(prevRounds => [nextGuess, ...prevRounds])
     }
 
     return(
         <View style={styles.screen}>
-            <Text>Opponent`s guess:</Text>
+            <Text style={STYLES.bodyText}>Opponent`s guess:</Text>
             <NumberContainer>{currentGuess}</NumberContainer>
             <Card style={styles.buttonsGroup}>
-                <View><Button title="LOWER" onPress={nextGuessHandler.bind(this, 'lower')} /></View>
-                <View><Button title="GREATER" onPress={nextGuessHandler.bind(this, 'greater')} /></View>
+                <View><MainButton onPress={nextGuessHandler.bind(this, 'lower')} >
+                    <Ionicons name="md-remove" size={24} color="white" />
+                </MainButton></View>
+                <View><MainButton onPress={nextGuessHandler.bind(this, 'greater')} >
+                    <Ionicons name="md-add" size={24} color="white" />
+                </MainButton></View>
             </Card>
+            <FlatList 
+                data={rounds}
+                renderItem={renderItemList.bind(this, rounds.length)}
+                keyExtractor={item => item.toString()}
+                contentContainerStyle={styles.list}
+            />
         </View>
     );
 
@@ -77,6 +99,20 @@ const styles = StyleSheet.create({
         justifyContent: 'space-around',
         width: 300,
         maxWidth: '80%',
+    },
+    listItem:{
+        borderWidth: 1,
+        borderColor: 'black',
+        padding: 10,
+        borderRadius: 5,
+        flexDirection: 'row',
+        marginVertical: 5,
+        justifyContent: 'space-between',
+        width: 300,
+    },
+    list: {
+        justifyContent: 'flex-end',
+        flexGrow: 1,
     }
 
 })
